@@ -3,10 +3,15 @@ local args = { ... }
 local init = require "functions.init"
 local post = require "functions.post"
 
+local install = require "functions.install"
+local login = require "functions.login"
+
 local functions = {
     init = init,
     post = post,
-    add = "todo"
+    add = "",
+    install = install,
+    login = login
 }
 
 local start = os.clock()

@@ -1,2 +1,8 @@
 .vscode
 .DS_Store
+a
+b
+c
+examplePackage
+luam_modules
+package-lock.json

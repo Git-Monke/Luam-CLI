@@ -2,7 +2,7 @@ local encodeFile = require("functions.post.encodeFile")
 local json = require("functions.json")
 
 local post_package_api_url =
-"https://g06vvsjan9.execute-api.us-west-2.amazonaws.com/main/packages"
+"https://api.luam.dev/packages"
 
 local function validate_package_json(package_json)
     local required_fields = { "name", "version", "dependencies" }
@@ -17,6 +17,12 @@ end
 local function post()
     local wkdir = shell.dir()
     local package_json_path = fs.combine(wkdir, "package.json")
+
+    if not fs.exists('luam.key') then
+        return 'No api token found. Run luam login and provide a valid api token.'
+    end
+
+    local api_token = fs.open("luam.key", "r").readAll()
 
     if not fs.exists(package_json_path) then
         return '"package.json" not found. Run "luam init" to initialize package.'
@@ -33,10 +39,12 @@ local function post()
         payload = encoded_payload,
     }
 
-    local result, detail, errorResponse = http.post(post_package_api_url, encode(request_body))
+    local result, detail, errorResponse = http.post(post_package_api_url, encode(request_body), {
+        Authorization = api_token
+    })
 
     if not result then
-        return string.format("%s: %s", detail, errorResponse.readAll())
+        return string.format("%s: %s", detail, decode(errorResponse.readAll()).message or "No message provided")
     end
 
     return string.format("%s v%s was posted successfully!", package_json.name, package_json.version)

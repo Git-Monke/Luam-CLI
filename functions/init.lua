@@ -3,20 +3,25 @@ require "functions.json"
 local function init(args)
     local wkdir = shell.dir()
 
-    print("Package name: ")
-    local name = io.read()
+    print("Create new directory or initialize in current directory? (y/n)")
+    local create_in_new_dir = io.read() == "y"
+    local name = shell.dir():match("([^/]+)$")
 
-    print("Confirm creation (y/n): ")
-    local confirmation = io.read()
-
-    if confirmation ~= "y" then
-        return "Package initialization aborted"
+    if create_in_new_dir then
+        print("Package name: ")
+        name = io.read()
+        wkdir = fs.combine(wkdir, name)
     end
 
     local package_json_path = fs.combine(wkdir, "package.json")
 
     if fs.exists(package_json_path) then
-        return "Package has already been initialized."
+        print("Package has already been initialized. Write over existing information? (y/n)")
+
+        local result = io.read()
+        if result ~= "y" then
+            return "Project initalization aborted"
+        end
     end
 
     local writer = fs.open(package_json_path, "w")

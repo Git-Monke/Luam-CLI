@@ -189,7 +189,6 @@ end
 
 local function reconstructFile(outPath, size, reader)
     local writer = fs.open(outPath, "wb")
-
     for _ = 1, size do
         writer.write(reader.read())
     end
@@ -227,10 +226,12 @@ local function untar(path, outPath)
             if type == 5 then
                 fs.makeDir(newOutPath)
             else
-                if fs.exists(newOutPath) then
-                    print(newOutPath .. " already exists. Skipping file.")
-                else
+                if not fs.exists(newOutPath) then
                     reconstructFile(newOutPath, size, reader)
+                else
+                    for i = 1, 512 do
+                        reader.read()
+                    end
                 end
             end
         end
