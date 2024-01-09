@@ -126,8 +126,22 @@ local function endArchive(tarWriter)
     tarWriter.close()
 end
 
-local function tarifyRecursive(dir, currentPath, writer, writerPath)
+local function includes(tabl, item)
+    for _, other_item in ipairs(tabl) do
+        if other_item == item then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function tarifyRecursive(dir, currentPath, ignore_files, writer, writerPath)
     local absPath = dir .. "/" .. currentPath
+    print(absPath)
+    if includes(ignore_files, absPath) then
+        return
+    end
 
     if not fs.isDir(absPath) then
         encodeFile(dir, currentPath, writer)
@@ -144,15 +158,17 @@ local function tarifyRecursive(dir, currentPath, writer, writerPath)
             local subAbsPath = dir .. "/" .. subPath
 
             if fs.isDir(subAbsPath) then
-                tarifyRecursive(dir, subPath, writer, writerPath)
+                tarifyRecursive(dir, subPath, ignore_files, writer, writerPath)
             elseif subAbsPath ~= writerPath then
-                encodeFile(dir, subPath, writer)
+                if not includes(ignore_files, subAbsPath) then
+                    encodeFile(dir, subPath, writer)
+                end
             end
         end
     end
 end
 
-local function tar(path, out, writer)
+local function tar(path, out, ignore_files, writer)
     assert(path, "No path was provided")
 
     if out then
@@ -167,7 +183,7 @@ local function tar(path, out, writer)
 
     writer = writer or fs.open(out, "wb")
 
-    tarifyRecursive(dir, filename, writer, out)
+    tarifyRecursive(dir, filename, ignore_files, writer, out)
     endArchive(writer)
 end
 

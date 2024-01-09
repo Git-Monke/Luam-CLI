@@ -36,30 +36,6 @@ local function concat(t1, i2)
   return t3
 end
 
-local function split_current_directory()
-  local wkdir = shell.dir()
-  local result = {}
-
-  for segment in string.gmatch(wkdir, "([^/]+)") do
-    print(segment)
-    table.insert(result, segment)
-  end
-
-  return result;
-end
-
-local function find_package_path()
-  local wkpath = split_current_directory()
-
-  print(fs.combine(table.concat(wkpath, "/"), "package.json"))
-
-  while not fs.exists(fs.combine(table.concat(wkpath, "/"), "package.json")) and #wkpath > 0 do
-    wkpath[#wkpath] = nil
-  end
-
-  return table.concat(wkpath, "/")
-end
-
 -- Installation
 
 local function combine_to_nested_luam_path(root, options, length)
@@ -114,6 +90,7 @@ local function attempt_install(modules_dir, path, options, package_lock, all_pac
     for path, data in pairs(package_lock) do
       if (data.version == dep_version) then
         existing_installation_path = path
+        is_already_accessable = true
       end
     end
 
@@ -142,10 +119,10 @@ local function download_file(name, version)
   local processed_package_lock = {}
 
   -- This part generates the body of the request
-
-  for _, package in ipairs(package_lock) do
+  for _, package in pairs(package_lock) do
     local name = package.name
     local version = package.version
+    print(name, version)
 
     if not processed_package_lock[name] then
       processed_package_lock[name] = {}
@@ -176,7 +153,6 @@ local function download_file(name, version)
 
   local all_packages_data = decode(result.readAll())
   local served_version = version
-
   -- Because no version can be specified, we must retrieve the served version so we can access the root package to initialize installation
   for k in pairs(all_packages_data[name]) do
     served_version = k
@@ -191,6 +167,8 @@ local function download_file(name, version)
   local package_lock_writer = fs.open(package_lock_path, "w");
   package_lock_writer.write(encodePretty(package_lock))
   package_lock_writer.close()
+
+  return served_version
 end
 
 return download_file

@@ -3,14 +3,14 @@ local args = { ... }
 local init = require "functions.init"
 local post = require "functions.post"
 
-local install = require "functions.install"
+local add = require "functions.add"
 local login = require "functions.login"
 
 local functions = {
     init = init,
     post = post,
-    add = "",
-    install = install,
+    add = add,
+    a = add,
     login = login
 }
 

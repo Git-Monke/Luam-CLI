@@ -3,14 +3,8 @@ require "functions.json"
 local function init(args)
     local wkdir = shell.dir()
 
-    print("Create new directory or initialize in current directory? (y/n)")
-    local create_in_new_dir = io.read() == "y"
-    local name = shell.dir():match("([^/]+)$")
-
-    if create_in_new_dir then
-        print("Package name: ")
-        name = io.read()
-        wkdir = fs.combine(wkdir, name)
+    if args[2] then
+        wkdir = wkdir .. "/" .. args[2]
     end
 
     local package_json_path = fs.combine(wkdir, "package.json")
@@ -31,6 +25,10 @@ local function init(args)
         dependencies = {}
     }
     writer.write(encodePretty(default_package_structure))
+
+    local ignore_writer = fs.open(fs.combine(wkdir, ".luamignore"), "w")
+    ignore_writer.write("luam_modules")
+    ignore_writer.write("package-lock.json")
 
     return string.format("Package %s has been initialized", name)
 end

@@ -31,7 +31,23 @@ local function post()
     local package_json = decodeFromFile(package_json_path)
     validate_package_json(package_json)
 
-    local encoded_payload = encodeFile(wkdir)
+    local luam_ignore_path = fs.combine(wkdir, ".luamignore")
+    local luam_ignore = {}
+
+    if fs.exists(luam_ignore_path) then
+        local luam_ignore_reader = fs.open(luam_ignore_path, "r")
+        local line = "temp"
+
+        while line do
+            line = luam_ignore_reader.readLine()
+            if not line then
+                break
+            end
+            table.insert(luam_ignore, wkdir .. "/" .. line)
+        end
+    end
+    table.print(luam_ignore)
+    local encoded_payload = encodeFile(wkdir, luam_ignore)
     local request_body = {
         name = package_json.name,
         version = package_json.version,
