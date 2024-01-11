@@ -20,14 +20,14 @@ local function init(args)
 
     local writer = fs.open(package_json_path, "w")
     local default_package_structure = {
-        name = name,
+        name = args[2] or "",
         version = "0.1.0",
         dependencies = {}
     }
     writer.write(encodePretty(default_package_structure))
 
     local ignore_writer = fs.open(fs.combine(wkdir, ".luamignore"), "w")
-    ignore_writer.write("luam_modules")
+    ignore_writer.write("luam_modules\n")
     ignore_writer.write("package-lock.json")
 
     return string.format("Package %s has been initialized", name)

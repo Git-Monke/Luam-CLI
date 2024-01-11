@@ -27,82 +27,163 @@ local function includes(table, item)
   return false
 end
 
-local function concat(t1, i2)
-  local t3 = {}
-  for _, item in ipairs(t1) do
-    table.insert(t3, item)
+local function clone(_table)
+  local new_table = {}
+  for _, item in ipairs(_table) do
+    table.insert(new_table, item)
   end
-  table.insert(t3, i2)
-  return t3
+  return new_table
 end
 
--- Installation
+local function combine_luam_path(root, options, i, name)
+  for j = 1, i do
+    root = root .. "/luam_modules/" .. options[j]
+  end
 
-local function combine_to_nested_luam_path(root, options, length)
-  for i = 1, math.min(#options, length) do
-    root = root .. "/" .. options[i] .. "/luam_modules"
+  if name then
+    root = root .. "/luam_modules/" .. name
   end
 
   return root
 end
 
-local function perform_relative_to_dir(root, options, func)
-  for i = 0, #options do
-    if func(combine_to_nested_luam_path(root, options, i)) then
-      return true
-    end
-  end
-
-  return false
+local function get_root(file_path)
+  local last_slash_index =
+      file_path:match(".*()/")
+  return last_slash_index and file_path:sub(1, last_slash_index - 1) or file_path
 end
 
-local function attempt_install(modules_dir, path, options, package_lock, all_package_data, name, version)
-  local install_path = fs.combine(path, name)
+local function a_can_access_b(a, b)
+  local root_1 = get_root(a)
+  local root_2 = get_root(b)
+  return root_1:sub(#root_2) == root_2
+end
 
-  if package_lock[install_path] then
-    return false
+-- Installation
+
+local function find_first_of(package_name, package_version, package_lock)
+  for path, data in package_lock do
+    if data.name == package_name and data.version == package_version then
+      return data
+    end
   end
-  local package_data = all_package_data[name][version]
+end
 
-  install_into_dir(path, name, package_data.payload)
+local function find_first_from_path(path, package_name, package_version, package_lock)
+  path = path .. "/luam_modules/" .. package_name
+  while #path > 0 do
+    print(path)
+    local data = package_lock[path]
 
-  package_lock[install_path] = {
-    name = name,
-    version = version,
-    dependencies = package_data.dependencies,
-  }
-
-  for dep_name, dep_version in pairs(package_data.providedDependencyVersions) do
-    -- If, in the payload, the dependency is included, that means the server identified that a package needed to be served, and so files need to be installed
-    if all_package_data[dep_name] and all_package_data[dep_name][dep_version] then
-      local next_options = concat(options, name)
-      perform_relative_to_dir(modules_dir, next_options, function(next_path)
-        return attempt_install(modules_dir, next_path, next_options, package_lock, all_package_data, dep_name,
-          dep_version)
-      end)
+    if data and data.name == package_name and data.version == package_version then
+      return path
     end
 
-    -- If it wasn't included, that means it exists somewhere else in the module tree already and should only be copied to a place the new module can access it
-    local existing_installation_path = ""
-    local is_already_accessable = false
-
-    -- Go through the package lock and see if the required version is already accessable from the installation location. Also, cache the file path that the dependency can be copied from if it isn't.
-    for path, data in pairs(package_lock) do
-      if (data.version == dep_version) then
-        existing_installation_path = path
-        is_already_accessable = true
+    for i = 1, 3 do
+      local prev_path = path
+      path = get_root(path)
+      if prev_path == path then
+        return false
       end
     end
 
-    if existing_installation_path ~= "" then
+    path = path .. "/" .. package_name
+  end
+end
 
-    else
-      print(string.format("Warning, %s %s was expected to exist and is required by %s %s, but could not be found.",
-        dep_name, dep_version, name, version))
+-- package_data should be a table with a "name", "version", and "dependencies"
+-- returns the path in the package_lock it copied from
+local function install_by_copy(package_data, install_path, package_lock)
+  local copy_from_path = ""
+
+  for path, data in pairs(package_lock) do
+    if data.name == package_data.name and data.version == package_data.version then
+      copy_from_path = path
     end
   end
 
-  return true
+  fs.copy(copy_from_path, install_path)
+
+  return copy_from_path
+end
+
+local function install(root, packages, package_lock, first_package_name, first_package_version)
+  local installation_stack = {}
+
+  local first_item = packages[first_package_name][first_package_version]
+  first_item.name = first_package_name
+  first_item.version = first_package_version
+  first_item.options = {}
+
+  table.insert(installation_stack, first_item)
+
+  for _, item in ipairs(installation_stack) do
+    local name = item.name
+    local version = item.version
+
+    local options = item.options
+    local options_clone = clone(options)
+    table.insert(options_clone, name)
+
+    for i = 0, #options do
+      local install_path = combine_luam_path(root, options, i, name)
+
+      if package_lock[install_path] and package_lock[install_path].version == version then
+        break;
+      end
+
+      if not package_lock[install_path] then
+        if item.payload then
+          install_into_dir(get_root(install_path), name, item.payload)
+
+          package_lock[install_path] = {
+            name = item.name,
+            version = item.version,
+            dependencies = item.dependencies
+          }
+
+          for dep_name, dep_version in pairs(item.providedDependencyVersions) do
+            local new_item = nil
+
+            if packages[dep_name] and packages[dep_name][dep_version] then
+              new_item = packages[dep_name][dep_version]
+              new_item.name = dep_name
+              new_item.version = dep_version
+            else
+              new_item = {
+                name = dep_name,
+                version = dep_version
+              }
+            end
+            new_item.options = options_clone
+            table.insert(installation_stack, new_item)
+          end
+        else
+          local path_copied_from = ""
+
+          -- In this case, if there is a version then we are copying over a specific dependency that we need
+          -- for another package. If there is no version, then we are copying over the dependencies of a dependency
+          -- that has been copied over, meaning we first have to find what the original copied dependency was referencing
+          -- and then reinstall using that
+          if version then
+            path_copied_from = install_by_copy(item, install_path, package_lock)
+          else
+            local item_data = find_first_from_path(item.copied_from_path, name)
+            path_copied_from = install_by_copy(item_data, install_path, package_lock)
+          end
+
+          local copied_data = package_lock[path_copied_from]
+          package_lock[install_path] = copied_data
+
+          for dep_name, _ in pairs(copied_data.dependencies) do
+            table.insert(installation_stack,
+              { options = options_clone, name = dep_name, copied_from_path = path_copied_from })
+          end
+        end
+        break
+      end
+    end
+  end
 end
 
 -- Main
@@ -122,7 +203,6 @@ local function download_file(name, version)
   for _, package in pairs(package_lock) do
     local name = package.name
     local version = package.version
-    print(name, version)
 
     if not processed_package_lock[name] then
       processed_package_lock[name] = {}
@@ -146,7 +226,7 @@ local function download_file(name, version)
   local result, error_type, error_handler = http.post(get_package_api_url, encoded_package_lock, headers)
 
   if not result then
-    error(string.format("%s: %s", error_type, error_handler.readAll()))
+    error(string.format("%s: %s", error_type, error_handler and error_handler.readAll()))
   end
 
   -- This part takes the result and performs the actual installation
@@ -158,16 +238,21 @@ local function download_file(name, version)
     served_version = k
   end
 
-  local modules_dir = wkdir .. "/luam_modules"
-
-  perform_relative_to_dir(modules_dir, {}, function(path)
-    return attempt_install(modules_dir, path, {}, package_lock, all_packages_data, name, served_version)
-  end)
+  install(wkdir, all_packages_data, package_lock, name, served_version)
 
   local package_lock_writer = fs.open(package_lock_path, "w");
   package_lock_writer.write(encodePretty(package_lock))
   package_lock_writer.close()
 
+  local packages_installed = 0
+
+  for version, _ in pairs(all_packages_data) do
+    for package, _ in pairs(all_packages_data[version]) do
+      packages_installed = packages_installed + 1
+    end
+  end
+
+  print(string.format("%s package%s installed", packages_installed, packages_installed > 1 and "s" or ""))
   return served_version
 end
 

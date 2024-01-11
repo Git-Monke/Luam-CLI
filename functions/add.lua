@@ -21,6 +21,7 @@ local function install(args)
 
     package_json.dependencies[args[2]] = "^" .. served_version
     local package_json_writer = fs.open(package_path, "w")
+    table.print(package_json)
     package_json_writer.write(encodePretty(package_json))
 end
 

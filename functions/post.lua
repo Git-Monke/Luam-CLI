@@ -1,5 +1,5 @@
 local encodeFile = require("functions.post.encodeFile")
-local json = require("functions.json")
+require("functions.json")
 
 local post_package_api_url =
 "https://api.luam.dev/packages"
@@ -46,7 +46,7 @@ local function post()
             table.insert(luam_ignore, wkdir .. "/" .. line)
         end
     end
-    table.print(luam_ignore)
+
     local encoded_payload = encodeFile(wkdir, luam_ignore)
     local request_body = {
         name = package_json.name,
@@ -60,6 +60,10 @@ local function post()
     })
 
     if not result then
+        if not errorResponse then
+            return "The request timed out. Either luam is down or it is blocked on your network"
+        end
+
         return string.format("%s: %s", detail, decode(errorResponse.readAll()).message or "No message provided")
     end
 
