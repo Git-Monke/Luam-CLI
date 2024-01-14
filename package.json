@@ -1,6 +1,5 @@
 {
 	"dependencies": {
-		"package2": "^0.1.0",
 		"package1": "^0.1.0"
 	}
 }

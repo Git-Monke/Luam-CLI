@@ -6,12 +6,16 @@ local post = require "functions.post"
 local add = require "functions.add"
 local login = require "functions.login"
 
+local delete = require "functions.delete"
+
 local functions = {
-    init = init,
-    post = post,
-    add = add,
-    a = add,
-    login = login
+    init   = init,
+    post   = post,
+    add    = add,
+    a      = add,
+    delete = delete,
+    d      = delete,
+    login  = login
 }
 
 local start = os.clock()

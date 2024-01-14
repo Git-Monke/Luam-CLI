@@ -53,26 +53,9 @@ local function get_root(file_path)
   return last_slash_index and file_path:sub(1, last_slash_index - 1) or file_path
 end
 
-local function a_can_access_b(a, b)
-  local root_1 = get_root(a)
-  local root_2 = get_root(b)
-  return root_1:sub(#root_2) == root_2
-end
-
--- Installation
-
-local function find_first_of(package_name, package_version, package_lock)
-  for path, data in package_lock do
-    if data.name == package_name and data.version == package_version then
-      return data
-    end
-  end
-end
-
 local function find_first_from_path(path, package_name, package_version, package_lock)
   path = path .. "/luam_modules/" .. package_name
   while #path > 0 do
-    print(path)
     local data = package_lock[path]
 
     if data and data.name == package_name and data.version == package_version then
