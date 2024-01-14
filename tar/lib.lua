@@ -138,7 +138,6 @@ end
 
 local function tarifyRecursive(dir, currentPath, ignore_files, writer, writerPath)
     local absPath = dir .. "/" .. currentPath
-    print(absPath)
     if includes(ignore_files, absPath) then
         return
     end

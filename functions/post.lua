@@ -1,4 +1,5 @@
 local encodeFile = require("functions.post.encodeFile")
+local increment_version = require("functions.versions")
 require("functions.json")
 
 local post_package_api_url =
@@ -10,6 +11,16 @@ local function validate_package_json(package_json)
     for _, required_field in ipairs(required_fields) do
         if not package_json[required_field] then
             error(string.format('Required field "%s" missing from package.json', required_field))
+        end
+    end
+
+    local vcw = fs.open(string.format(".luamversioncache/%s", package_json.name), "r")
+
+    if vcw then
+        local version = vcw.readAll()
+        if version == package_json["version"] then
+            local new_version = increment_version("patch")
+            package_json["version"] = new_version
         end
     end
 end
@@ -54,6 +65,10 @@ local function post()
         dependencies = package_json.dependencies,
         payload = encoded_payload,
     }
+
+    local vcw = fs.open(".luamversioncache" .. "/" .. package_json.name, "w")
+    vcw.write(package_json.version)
+    vcw.close()
 
     local result, detail, errorResponse = http.post(post_package_api_url, encode(request_body), {
         Authorization = api_token

@@ -8,23 +8,24 @@ local function init(args)
     end
 
     local package_json_path = fs.combine(wkdir, "package.json")
+    local package_json = {}
 
     if fs.exists(package_json_path) then
-        print("Package has already been initialized. Write over existing information? (y/n)")
-
-        local result = io.read()
-        if result ~= "y" then
-            return "Project initalization aborted"
-        end
+        package_json = decodeFromFile(package_json_path)
     end
 
+    if package_json["name"] then
+        print("Package has already been initialized")
+    end
+
+    local name = args[2] or wkdir:match("([^/]+)$")
     local writer = fs.open(package_json_path, "w")
-    local default_package_structure = {
-        name = args[2] or "",
-        version = "0.1.0",
-        dependencies = {}
-    }
-    writer.write(encodePretty(default_package_structure))
+
+    package_json["name"] = name
+    package_json["version"] = "0.1.0"
+    package_json["dependencies"] = package_json["dependencies"] or {}
+
+    writer.write(encodePretty(package_json))
 
     local ignore_writer = fs.open(fs.combine(wkdir, ".luamignore"), "w")
     ignore_writer.write("luam_modules\n")

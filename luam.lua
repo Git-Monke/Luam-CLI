@@ -7,6 +7,7 @@ local add = require "functions.add"
 local login = require "functions.login"
 
 local delete = require "functions.delete"
+local increment_version = require "functions.versions"
 
 local functions = {
     init   = init,
@@ -15,7 +16,16 @@ local functions = {
     a      = add,
     delete = delete,
     d      = delete,
-    login  = login
+    login  = login,
+    patch  = function()
+        increment_version("patch")
+    end,
+    minor  = function()
+        increment_version("minor")
+    end,
+    major  = function()
+        increment_version("major")
+    end
 }
 
 local start = os.clock()
