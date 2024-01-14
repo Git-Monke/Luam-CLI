@@ -10,7 +10,8 @@ luacc -o prod/large.lua -i ~/Library/Application\ Support/CraftOS-PC/computers/0
  functions.post\
  functions.delete.deletePackage\
  functions.install.downloadFile\
- functions.post.encodeFile
+ functions.post.encodeFile\
+ functions.versions
 
 luamin -f prod/large.lua > prod/luam.lua
 
