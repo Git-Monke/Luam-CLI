@@ -19,7 +19,7 @@ local function install(args)
         package_json = decodeFromFile(package_path)
     end
 
-    if package_json and package_json.dependencies[name] then
+    if package_json and package_json.dependencies and package_json.dependencies[name] then
         delete({ 0, name })
     end
 
