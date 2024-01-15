@@ -36,7 +36,9 @@ jobs:
           cd ..
 
       - name: Minify compiled code
-        run: luamin -f release/temp.lua > release/luam.lua
+        run: |
+          ls -lah release/
+          luamin -f release/temp.lua > release/luam.lua
 
       - name: Remove uncompiled version
         run: rm release/temp.lua
