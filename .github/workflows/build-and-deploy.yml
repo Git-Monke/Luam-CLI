@@ -21,8 +21,6 @@ jobs:
 
       - name: Set up Lua
         uses: leafo/gh-actions-lua@v9
-        with:
-          luaVersion: "5.1"
 
       - name: Set up LuaRocks
         uses: leafo/gh-actions-luarocks@v4
@@ -39,7 +37,7 @@ jobs:
 
       - name: Minify compiled code
         run: |
-          ls -lah release/
+          touch release/luam.lua
           luamin -f release/temp.lua > release/luam.lua
 
       - name: Remove uncompiled version
