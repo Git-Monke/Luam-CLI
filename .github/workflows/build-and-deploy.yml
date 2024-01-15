@@ -15,7 +15,7 @@ jobs:
 
       - name: Set up Node
       - uses: actions/setup-node@v4
-      - run: npm install -g luamin
+        run: npm install -g luamin
 
       - name: Set up Lua
       - uses: leafo/gh-actions-lua@v9
