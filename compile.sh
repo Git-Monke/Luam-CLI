@@ -1,4 +1,4 @@
-touch release/temp.lua
+touch release/verbose.lua
 cd ./src
 FILES=$(find . -name '*.lua' | grep -v 'luam.lua' | cut -c3- | sed "s/\.lua$//" | sed "s/\//\./g")
 luacc -o ../release/verbose.lua luam $FILES 
