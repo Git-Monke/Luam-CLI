@@ -31,18 +31,7 @@ jobs:
         run: luarocks install luacc
 
       - name: Compile Lua files
-        run: |
-          cd ./src
-          FILES=$(find . -name '*.lua' | grep -v 'luam.lua' | cut -c3- | sed "s/\.lua$//" | sed "s/\//\./g")
-          luacc -o ../release/temp.lua luam $FILES 
-          cd ..
-
-      - name: Minify compiled code
-        run: |
-          touch release/luam.lua
-          pwd
-          ls -lah
-          luamin -f release/temp.lua > release/luam.lua
+        run: sh ./compile.sh
 
       - name: Remove uncompiled version
         run: rm release/temp.lua
