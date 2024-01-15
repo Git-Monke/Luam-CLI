@@ -1,19 +1,10 @@
-luacc -o prod/large.lua -i ~/Library/Application\ Support/CraftOS-PC/computers/0.luam\
- luam\
- tar.lib\
- base64.lib\
- functions.add\
- functions.delete\
- functions.init\
- functions.json\
- functions.login\
- functions.post\
- functions.delete.deletePackage\
- functions.install.downloadFile\
- functions.post.encodeFile\
- functions.versions
+touch release/temp.lua
+cd ./src
+FILES=$(find . -name '*.lua' | grep -v 'luam.lua' | cut -c3- | sed "s/\.lua$//" | sed "s/\//\./g")
+luacc -o ../release/temp.lua luam $FILES 
+cd ..
 
-luamin -f prod/large.lua > prod/luam.lua
-luamin -f installation_script.lua > prod/install.lua
+luamin -f release/temp.lua > release/luam.lua
+luamin -f installation_script.lua > release/install.lua
 
-rm prod/large.lua
+rm release/temp.lua

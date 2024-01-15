@@ -1,0 +1,34 @@
+name: Compile and minify source code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+      - uses: actions/setup-node@v4
+      - run: npm install -g luamin
+
+      - name: Set up Lua
+      - uses: leafo/gh-actions-lua@v9
+      - uses: leafo/gh-actions-luarocks@v4
+        run: luarocks install luacc
+
+      - name: Compile Lua files
+        run: |
+          cd ./src
+          FILES=$(find . -name '*.lua' | grep -v 'luam.lua' | cut -c3- | sed "s/\.lua$//" | sed "s/\//\./g")
+          luacc -o ../release/temp.lua luam $FILES 
+          cd ..
+      - name: Minify compiled code
+        run: luamin -f release/temp.lua > release/luam.lua
+      - name: Remove uncompiled version
+        run: rm release/temp.lua
