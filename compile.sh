@@ -4,7 +4,7 @@ FILES=$(find . -name '*.lua' | grep -v 'luam.lua' | cut -c3- | sed "s/\.lua$//" 
 luacc -o ../release/verbose.lua luam $FILES 
 cd ..
 
-luamin -f release/verbose.lua > release/luam.lua
-luamin -f installation_script.lua > release/install.lua
+luamin -f ./release/verbose.lua > release/luam.lua
+luamin -f ./installation_script.lua > release/install.lua
 
-rm release/temp.lua
+rm release/verbose.lua
