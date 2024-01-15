@@ -40,6 +40,8 @@ jobs:
       - name: Minify compiled code
         run: |
           touch release/luam.lua
+          pwd
+          ls -lah
           luamin -f release/temp.lua > release/luam.lua
 
       - name: Remove uncompiled version
