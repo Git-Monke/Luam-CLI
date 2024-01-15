@@ -32,6 +32,3 @@ jobs:
 
       - name: Compile Lua files
         run: sh ./compile.sh
-
-      - name: Remove uncompiled version
-        run: rm release/temp.lua
