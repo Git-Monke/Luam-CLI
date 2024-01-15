@@ -5,8 +5,6 @@ local base64 = require("base64.lib")
 local get_package_api_url =
 "https://api.luam.dev/packages/install"
 
-local tableutils = require(".tableutils.lib")
-
 -- Utilities
 
 local function install_into_dir(dir, name, encoded_file_data)

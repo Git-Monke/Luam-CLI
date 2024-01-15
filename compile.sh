@@ -14,5 +14,6 @@ luacc -o prod/large.lua -i ~/Library/Application\ Support/CraftOS-PC/computers/0
  functions.versions
 
 luamin -f prod/large.lua > prod/luam.lua
+luamin -f installation_script.lua > prod/install.lua
 
 rm prod/large.lua

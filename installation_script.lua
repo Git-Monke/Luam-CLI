@@ -56,3 +56,14 @@ if response then
 else
     print("Error: Unable to fetch file from GitHub.")
 end
+
+local line = 'shell.setPath(shell.path() .. ":" .. "/luam")'
+local pattern = 'shell.setPath%(shell.path%(%) %.. ":" .. "/luam"%)'
+pattern = pattern:gsub("([%(%)%.])", "%%%1")
+local startup = fs.open("startup.lua", "r")
+local contents = startup and startup.readAll()
+if not contents or (contents and not contents:find(pattern)) then
+    local writer = fs.open("startup.lua", "w")
+    writer.write("\n" .. line)
+    writer.close()
+end
