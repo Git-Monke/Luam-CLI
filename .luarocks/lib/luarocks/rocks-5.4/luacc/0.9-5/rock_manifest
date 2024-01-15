@@ -1,0 +1,10 @@
+rock_manifest = {
+   bin = {
+      luacc = "efe632fb5a8e391db6ecf59b00affa95"
+   },
+   doc = {
+      ["LICENSE.txt"] = "76b54490905a91b1dfecc88a59bf1b13",
+      ["README.md"] = "60e6de0ad6eddacf72436214c5c6c18c"
+   },
+   ["luacc-0.9-5.rockspec"] = "38cd669b9bafe0c85e44d0f109275c29"
+}
