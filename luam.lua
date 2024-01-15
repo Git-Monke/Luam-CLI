@@ -1,6 +1,6 @@
 local args = { ... }
 
-pcall(function()
+if args[1] ~= ".luam" then
     local init = require "functions.init"
     local post = require "functions.post"
 
@@ -50,44 +50,43 @@ pcall(function()
 
     if result then print(result) end
     print(string.format("Finished in %0.3f seconds", os.clock() - start))
-    os.exit()
-end)
-
-local function split(str, delim)
-    local result = {}
-    for match in (str .. delim):gmatch("(.-)" .. delim) do
-        table.insert(result, match)
+else
+    local function split(str, delim)
+        local result = {}
+        for match in (str .. delim):gmatch("(.-)" .. delim) do
+            table.insert(result, match)
+        end
+        return result
     end
-    return result
-end
 
-local default_require = require
+    local default_require = require
 
-local function searchModule(pathParts, moduleName)
-    while #pathParts > 0 do
-        local path = table.concat(pathParts, "/") .. "/luam_modules/" .. moduleName
-        local status, module = pcall(default_require, path:gsub("/", "."))
-        if status then
+    local function searchModule(pathParts, moduleName)
+        while #pathParts > 0 do
+            local path = table.concat(pathParts, "/") .. "/luam_modules/" .. moduleName
+            local status, module = pcall(default_require, path:gsub("/", "."))
+            if status then
+                return module
+            end
+            table.remove(pathParts)
+            table.remove(pathParts)
+        end
+    end
+
+    function require(moduleName)
+        local info = debug.getinfo(2, "S")
+        local path = info.source:sub(2)
+        path = path:match("(.*/)") or ""
+        path = path:sub(1, #path - 1)
+
+        local pathParts = split(path, "/")
+
+        local module = searchModule(pathParts, moduleName)
+
+        if module then
             return module
         end
-        table.remove(pathParts)
-        table.remove(pathParts)
+
+        return default_require(moduleName)
     end
-end
-
-function require(moduleName)
-    local info = debug.getinfo(2, "S")
-    local path = info.source:sub(2)
-    path = path:match("(.*/)") or ""
-    path = path:sub(1, #path - 1)
-
-    local pathParts = split(path, "/")
-
-    local module = searchModule(pathParts, moduleName)
-
-    if module then
-        return module
-    end
-
-    return default_require(moduleName)
 end
