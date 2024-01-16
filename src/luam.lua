@@ -4,7 +4,7 @@ if args[1] ~= ".luam" then
     local init = require "functions.init"
     local post = require "functions.post"
 
-    local add = require "functions.add"
+    local install = require "functions.install"
     local login = require "functions.login"
 
     local delete = require "functions.delete"
@@ -13,16 +13,19 @@ if args[1] ~= ".luam" then
     local list_version = version_tools.list_version
 
     local help = require "functions.help"
+    local list = require "functions.list"
 
     local functions = {
         init    = init,
         post    = post,
-        add     = add,
-        a       = add,
-        delete  = delete,
-        d       = delete,
+        install = install,
+        i       = install,
+        remove  = delete,
+        rm      = delete,
         login   = login,
         help    = help,
+        list    = list,
+        ls      = list,
         version = list_version,
         v       = list_version,
         patch   = function()
