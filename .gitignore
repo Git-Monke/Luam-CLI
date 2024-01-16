@@ -8,3 +8,4 @@ luam_modules
 package-lock.json
 .lua/
 .luarocks/
+.luamignore

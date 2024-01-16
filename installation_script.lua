@@ -37,7 +37,7 @@ end
 
 local owner = "Git-Monke"
 local repo = "Luam-CLI"
-local path = "prod/luam.lua"
+local path = "release/luam.lua"
 
 local url = string.format("https://api.github.com/repos/%s/%s/contents/%s", owner, repo, path)
 
@@ -63,6 +63,7 @@ pattern = pattern:gsub("([%(%)%.])", "%%%1")
 local startup = fs.open("startup.lua", "r")
 local contents = startup and startup.readAll()
 if not contents or (contents and not contents:find(pattern)) then
+    shell.setPath(shell.path() .. ":" .. "/luam")
     local writer = fs.open("startup.lua", "w")
     writer.write("\n" .. line)
     writer.close()
