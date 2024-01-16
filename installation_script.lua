@@ -57,14 +57,16 @@ else
     print("Error: Unable to fetch file from GitHub.")
 end
 
-local line = 'shell.setPath(shell.path() .. ":" .. "/luam")'
-local pattern = 'shell.setPath%(shell.path%(%) %.. ":" .. "/luam"%)'
+local line = 'shell.setPath(shell.path() .. ":" .. "/")'
+local pattern = 'shell.setPath%(shell.path%(%) %.. ":" .. "/"%)'
 pattern = pattern:gsub("([%(%)%.])", "%%%1")
 local startup = fs.open("startup.lua", "r")
 local contents = startup and startup.readAll()
 if not contents or (contents and not contents:find(pattern)) then
-    shell.setPath(shell.path() .. ":" .. "/luam")
+    shell.setPath(shell.path() .. ":" .. "/")
     local writer = fs.open("startup.lua", "w")
     writer.write("\n" .. line)
     writer.close()
+    print("Luam has been installed successfull!")
+    print("Run luam help for information about usage")
 end

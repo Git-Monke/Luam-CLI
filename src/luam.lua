@@ -10,6 +10,8 @@ if args[1] ~= ".luam" then
     local delete = require "functions.delete"
     local increment_version = require "functions.versions"
 
+    local help = require "functions.help"
+
     local functions = {
         init   = init,
         post   = post,
@@ -18,6 +20,7 @@ if args[1] ~= ".luam" then
         delete = delete,
         d      = delete,
         login  = login,
+        help   = help,
         patch  = function()
             increment_version("patch")
         end,
