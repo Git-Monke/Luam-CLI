@@ -8,26 +8,30 @@ if args[1] ~= ".luam" then
     local login = require "functions.login"
 
     local delete = require "functions.delete"
-    local increment_version = require "functions.versions"
+    local version_tools = require "functions.versions"
+    local increment_version = version_tools.increment_version
+    local list_version = version_tools.list_version
 
     local help = require "functions.help"
 
     local functions = {
-        init   = init,
-        post   = post,
-        add    = add,
-        a      = add,
-        delete = delete,
-        d      = delete,
-        login  = login,
-        help   = help,
-        patch  = function()
+        init    = init,
+        post    = post,
+        add     = add,
+        a       = add,
+        delete  = delete,
+        d       = delete,
+        login   = login,
+        help    = help,
+        version = list_version,
+        v       = list_version,
+        patch   = function()
             increment_version("patch")
         end,
-        minor  = function()
+        minor   = function()
             increment_version("minor")
         end,
-        major  = function()
+        major   = function()
             increment_version("major")
         end
     }

@@ -15,7 +15,7 @@ local function increment_semver(version, incType)
     end
 end
 
-local function increase_version(incType)
+local function increment_version(incType)
     local wkdir = shell.dir()
     local package_json_path = fs.combine(wkdir, "package.json")
 
@@ -41,4 +41,24 @@ local function increase_version(incType)
     return new_version
 end
 
-return increase_version
+local function list_version()
+    local wkdir = shell.dir()
+    local package_json_path = fs.combine(wkdir, "package.json")
+
+    if not fs.exists(package_json_path) then
+        return "No package.json found!"
+    end
+
+    local package_json = decodeFromFile(package_json_path)
+
+    if not package_json["version"] then
+        return "Must initialize package before incrementing version. Run luam init"
+    end
+
+    print(string.format("Current package version: %s", package_json.version))
+end
+
+return {
+    list_version = list_version,
+    increment_version = increment_version
+}
